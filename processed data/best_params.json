@@ -1,0 +1,15 @@
+{
+  "objective": "multiclass",
+  "num_class": 3,
+  "metric": "multi_logloss",
+  "verbose": -1,
+  "class_weight": "balanced",
+  "learning_rate": 0.01634450604377636,
+  "max_depth": 10,
+  "num_leaves": 28,
+  "feature_fraction": 0.86108227469395,
+  "bagging_fraction": 0.7157614716959835,
+  "min_child_samples": 7,
+  "reg_alpha": 0.043712897399106755,
+  "reg_lambda": 1.3050379588190602
+}

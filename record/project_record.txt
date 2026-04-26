@@ -1,0 +1,228 @@
+# Telstra 网络故障预测项目 - 完整记录
+
+## 项目概述
+
+本项目基于 Kaggle 上的 Telstra 网络故障数据集，使用深度学习方法预测网络故障的严重程度。项目旨在构建一个准确的故障预测模型，帮助网络运维人员及时识别和处理潜在的网络问题。
+
+## 硬件配置
+
+- CPU: Intel Core i5-13500
+- 内存: 16GB
+- GPU: NVIDIA RTX 4050
+- 软件环境: Python 3.11 + PyTorch 2.11.0 + Conda
+
+## 项目结构
+
+telstra-recruiting-network/
+├── code/                    # 代码文件夹
+│   ├── data_preparation.py   # 数据准备和合并
+│   ├── feature_engineering.py # 特征工程和选择
+│   ├── telstra_model.py      # 深度学习模型实现
+│   ├── data_visualization.py # 数据可视化
+│   ├── pytorch_classification.py # 通用分类模型
+│   ├── lightgbm_model.py     # LightGBM模型（优化方案）
+│   ├── feature_engineering_v2.py # 深度特征工程（优化方案）
+│   ├── smote_resampling.py   # SMOTE数据增强（优化方案）
+│   ├── ensemble_model.py     # 集成模型（优化方案）
+│   ├── target_encoding.py    # 目标编码（高级优化）
+│   ├── advanced_features.py  # 高级特征交叉（高级优化）
+│   ├── optuna_tuning.py      # 超参数调优（高级优化）
+│   ├── calibration.py        # 概率校准（高级优化）
+│   ├── final_ensemble.py     # 4模型集成（最终优化）
+│   ├── stacking_ensemble_v2.py # Stacking集成
+│   └── final_model_with_optuna.py # Optuna优化后的最终模型
+├── data set/                # 原始数据集文件夹
+├── processed data/          # 处理后的数据文件夹
+├── model/                   # 模型保存文件夹
+├── visualization/           # 可视化结果文件夹
+├── record/                  # 试验记录文件夹
+└── README.md                # 项目说明文档
+
+## 数据处理流程
+
+### 完整执行步骤
+
+| 步骤 | 脚本文件 | 描述 | 状态 |
+|------|----------|------|------|
+| 1 | data_preparation.py | 数据准备和合并 | 完成 |
+| 2 | feature_engineering_v2.py | 深度特征工程 | 完成 |
+| 3 | target_encoding.py | 目标编码 | 完成 |
+| 4 | advanced_features.py | 高级特征交叉 | 完成 |
+| 5 | final_ensemble.py | 4模型软投票集成 | 完成 |
+| 6 | optuna_tuning.py | Optuna超参数调优 | 完成 |
+| 7 | stacking_ensemble_v2.py | Stacking集成 | 完成 |
+| 8 | final_model_with_optuna.py | Optuna优化后的最终模型 | 完成 |
+
+### 各步骤详细说明
+
+#### 步骤1: 数据准备 (data_preparation.py)
+- 加载原始数据文件
+- 处理事件类型、日志特征、资源类型和严重程度数据
+- 合并所有数据为完整的训练集和测试集
+- 保存处理后的数据到 processed data 文件夹
+- 结果: 训练集 7,381条记录，462个特征；测试集 11,171条记录，461个特征
+
+#### 步骤2: 深度特征工程 (feature_engineering_v2.py)
+- 创建交互特征（event_log_ratio、event_log_product等）
+- 创建统计特征（volume_mean、volume_std、volume_total等）
+- 添加位置聚类特征
+- 结果: 训练集471个特征，测试集470个特征
+
+#### 步骤3: 目标编码 (target_encoding.py)
+- 对location_id进行目标编码
+- 使用交叉验证避免数据泄露
+- 结果: 添加location_id_target_encoded特征，训练集472个特征
+
+#### 步骤4: 高级特征交叉 (advanced_features.py)
+- 创建更多高级特征交叉（体积相关、多样性与强度交互等）
+- 结果: 最终训练集481个特征，测试集480个特征
+
+#### 步骤5: 4模型软投票集成 (final_ensemble.py)
+- 使用LightGBM + XGBoost + CatBoost + 随机森林进行软投票集成
+- 权重分配：LightGBM(0.30) + XGBoost(0.30) + CatBoost(0.25) + RF(0.15)
+- 5折交叉验证
+- 结果: CV Log Loss = 0.5214
+
+#### 步骤6: Optuna超参数调优 (optuna_tuning.py)
+- 50轮Optuna优化
+- 结果: Best Log Loss = 0.5179
+- 最佳参数:
+  - learning_rate: 0.016
+  - max_depth: 10
+  - num_leaves: 28
+  - feature_fraction: 0.861
+  - bagging_fraction: 0.716
+  - min_child_samples: 7
+  - reg_alpha: 0.044
+  - reg_lambda: 1.305
+
+#### 步骤7: Stacking集成 (stacking_ensemble_v2.py)
+- 使用Stacking方法代替软投票
+- 元学习器: Logistic Regression
+- 结果: CV Log Loss = 0.5341 (不如软投票)
+
+#### 步骤8: Optuna优化后的最终模型 (final_model_with_optuna.py)
+- 使用Optuna优化后的参数训练LightGBM
+- 结合XGBoost、CatBoost、随机森林进行软投票集成
+- 权重分配：LightGBM(0.35) + XGBoost(0.25) + CatBoost(0.25) + RF(0.15)
+- 结果: 生成最终提交文件
+
+## 模型架构
+
+### 基础模型
+输入层 (100个特征) -> 隐藏层1 (256) -> ReLU -> Dropout(0.5) -> 隐藏层2 (128) -> ReLU -> Dropout(0.5) -> 隐藏层3 (64) -> ReLU -> Dropout(0.3) -> 输出层 (3个类别)
+
+### 优化模型
+- LightGBM: 表格数据的最佳选择，支持GPU加速，使用Optuna优化参数
+- XGBoost: 与LightGBM互补，提供不同的模型视角
+- CatBoost: 新增模型，进一步提升集成效果
+- 随机森林: 增加模型的多样性
+- 集成策略: 软投票集成（推荐），权重分配为LGB(0.35) + XGB(0.25) + Cat(0.25) + RF(0.15)
+
+## 试验结果
+
+### 基础模型结果
+- 训练轮数: 50轮
+- 最佳验证准确率: 75.02%
+- 最终验证准确率: 74.20%
+
+### 分类报告（基础模型）
+
+              precision    recall  f1-score   support
+
+           0       0.80      0.88      0.84       951
+           1       0.61      0.47      0.53       376
+           2       0.57      0.57      0.57       150
+
+    accuracy                           0.74      1477
+   macro avg       0.66      0.64      0.65      1477
+weighted avg       0.73      0.74      0.73      1477
+
+### 优化模型结果对比
+
+| 模型 | CV Log Loss | 说明 |
+|------|-------------|------|
+| 基础4模型软投票 | 0.5214 | 初始集成 |
+| Optuna调优(LightGBM only) | 0.5179 | 50轮调优 |
+| Stacking集成 | 0.5341 | 不如软投票 |
+| Optuna优化后软投票 | ~0.52 | 推荐 |
+
+### 与排行榜对比
+
+| 排名 | 分数(Log Loss) | 说明 |
+|------|----------------|------|
+| 第1名 | 0.39546 | 最佳 |
+| 前10名 | ~0.40 | 顶尖水平 |
+| 您（优化后） | ~0.52 | 差距0.12 |
+| 您（优化前） | 0.63 | 差距0.23 |
+
+### 模型性能分析
+1. 类别 0（低严重程度）: 表现最好，精确率 0.80，召回率 0.88
+2. 类别 1（中等严重程度）: 表现较差，精确率 0.61，召回率 0.47
+3. 类别 2（高严重程度）: 表现一般，精确率 0.57，召回率 0.57
+
+### 数据分布分析
+- 数据集中故障严重程度分布不均衡
+- 类别 0 占比最高，类别 2 占比最低
+- 原始分布: [4784, 1871, 726]
+- SMOTE后分布: [4000, 1871, 1500]
+
+## 可视化结果
+
+生成了以下可视化文件：
+1. training_curves.png - 训练和验证损失曲线
+2. confusion_matrix.png - 混淆矩阵
+3. fault_severity_distribution.png - 故障严重程度分布
+4. event_type_distribution.png - 事件类型分布
+5. log_feature_distribution.png - 日志特征分布
+6. resource_type_distribution.png - 资源类型分布
+7. severity_type_distribution.png - 严重程度类型分布
+8. volume_distribution.png - 日志特征音量分布
+
+## 提交文件
+
+| 文件名 | 方法 | CV Log Loss |
+|--------|------|-------------|
+| submission.csv | 基础模型 | 0.63 |
+| submission_final_v2.csv | 4模型软投票 | 0.5214 |
+| submission_stacking.csv | Stacking集成 | 0.5341 |
+| submission_final_optuna.csv | Optuna优化后软投票 | ~0.52 |
+| submission_final_v2.csv | 推荐提交 | 0.5214 |
+
+- 文件格式：id, predict_0, predict_1, predict_2
+- 包含每个测试样本属于三个类别的概率值
+- 最终推荐提交文件由4模型软投票集成生成
+- 最终 CV Log Loss: 0.5214
+- 预期 Kaggle 提交分数: ~0.52
+
+## 优化经验总结
+
+### 有效的优化
+1. Optuna超参数调优: 将LightGBM的Log Loss从0.5214降低到0.5179，提升0.0035
+2. 特征工程: 从基础100个特征扩展到480个特征
+3. 多模型集成: 4模型软投票集成比单一模型效果好
+
+### 效果不佳的优化
+1. Stacking集成: 在本数据集上Log Loss为0.5341，不如简单的软投票(0.5214)
+2. SMOTE过采样: 对Log Loss提升不明显
+
+### 关键发现
+- 软投票集成比Stacking更适合这个数据集
+- Optuna调优对LightGBM效果显著
+- 特征工程对模型性能有重要影响
+
+## 进一步优化建议
+
+### 高优先级（预期提升0.02-0.03）
+1. 增加训练轮数: Optuna从50轮增加到200轮
+2. 概率校准: 使用Calibration改善概率估计
+3. 更多基模型: 添加ExtraTrees、AdaBoost等增加多样性
+
+### 中优先级（预期提升0.01-0.02）
+1. Focal Loss: 针对类别不平衡
+2. 高级特征选择: 基于特征重要性筛选
+3. 集成权重优化: 使用Optuna优化各模型权重
+
+### 低优先级（预期提升0.01）
+1. 数据增强优化: 尝试其他过采样方法
+2. 伪标签: 使用高置信度预测扩充训练集

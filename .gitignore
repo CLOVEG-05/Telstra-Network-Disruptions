@@ -1,0 +1,65 @@
+# Data files (keep sample data only for demonstration)
+data set/*.csv
+!data set/sample_submission.csv
+processed data/*.csv
+!processed data/sample_submission.csv
+model/*.pth
+model/*.pkl
+model/*.joblib
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# OS
+.DS_Store
+Thumbs.db
+
+# CatBoost
+catboost_info/
+
+# Logs
+*.log
+
+# Kaggle
+.kaggle/
+
+# Temporary files
+*.tmp
+temp/
+tmp/
