@@ -229,8 +229,3 @@ RF:        0.15
 - [ ] 基于特征重要性进行高级特征选择
 - [ ] Focal Loss针对类别不平衡问题
 - [ ] 伪标签技术扩充训练集
-
-## 联系方式
-
-- GitHub: `https://github.com/yourname`
-- Email: your@email.com
